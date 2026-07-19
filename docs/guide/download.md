@@ -1,5 +1,5 @@
 ---
-title: 下载
+title: 下载 (V4)
 icon: download
 category:
   - 指南
@@ -7,9 +7,13 @@ category:
   - 生态
 ---
 
-# 下载 TouchFish
+# 下载 TouchFish V4
 
-欢迎下载 TouchFish！根据您的需求和平台，您可以选择不同的发行版本。
+
+> [!WARNING]
+> 本页面已弃用，我们推荐您使用 [TouchFish V5](https://github.com/2044-space-elevator/TouchFish) 及其文档。TouchFish V4 仅在部分旧版本中使用，且不保证长期维护。
+
+欢迎下载 TouchFish v4！根据您的需求和平台，您可以选择不同的发行版本。
 
 ## 版本选择指南
 

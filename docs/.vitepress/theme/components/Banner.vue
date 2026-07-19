@@ -20,8 +20,8 @@ const closeBanner = () => {
   <div v-if="isVisible" class="banner">
     <div class="banner-content">
       <img src="/svg/touchfish.svg" alt="TouchFish" class="banner-icon" />
-      <span class="banner-text">TouchFish V5 已经启动开发！</span>
-      <a href="/guide/v5" class="learn-more">了解更多 →</a>
+      <span class="banner-text">TouchFish V5 全新架构，敬请期待！</span>
+      <a href="/guide/v5" class="learn-more">查看详情 →</a>
     </div>
     <button class="close-btn" @click="closeBanner" aria-label="关闭横幅">
       ✕

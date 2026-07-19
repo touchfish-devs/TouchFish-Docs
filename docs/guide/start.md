@@ -4,83 +4,87 @@ title: 快速开始
 
 # 快速开始
 
-## 下载 TouchFish
+## 环境要求
 
-参见 [下载](/guide/download.html)
+- **Python**
+- **操作系统**：Windows 10+、macOS、Linux 均可
+- **网络**：服务端和客户端之间网络可达（局域网或公网）
 
-## 作为服务端（创建聊天室）
+## 安装
 
-### 获取内网 IP 地址
+### 1. 获取源码
 
-Windows 用户：打开命令提示符，执行 `ipconfig`，查找 `IPv4 地址`
+```bash
+git clone https://github.com/2044-space-elevator/TouchFish.git
+cd TouchFish
+```
 
-Linux/macOS 用户：打开终端，执行 `ip a` 或 `ifconfig`
+### 2. 安装依赖
 
-### 检查端口可用性
+```bash
+pip install -r requirements.txt
+```
 
-Windows：`netstat -an | findstr <端口号>`（无输出表示端口空闲）
+核心依赖包括 Flask、websockets、argon2-cffi、cryptography、Pillow、captcha。
 
-Linux/macOS：`netstat -an | grep <端口号> 或 lsof -i :<端口号>`
+## 配置服务端
 
-### 启动服务器
+### 创建新实例
 
-1. 运行 TouchFish 程序
-2. 按下 \<Enter\> 键开始配置
-3. 选择启动方式为 `Server`
-4. 输入您的内网 IP 地址
-5. 指定一个可用的端口号
-6. 设置服务端昵称（将在聊天室中显示）
-7. 设置最大用户数（建议不超过 128）
-8. 将 IP 地址和端口信息分享给其他用户
+```bash
+python main.py --create-new-config --use-config 1
+```
 
-### 后续启动
-运行程序后，根据提示按下 \<Ctrl + C\> (Windows/Linux) 或 \<Ctrl + D\> (macOS)
+这会为配置 `1`（API 端口 8080、TCP 端口 8081）创建完整的运行目录，包括：
+- RSA 密钥对（`res/8080/secret/`）
+- SQLite 数据库文件
+- 默认头像和资源文件
+- 服务器配置文件
 
-程序将自动使用上次的配置启动服务器
+### 服务端配置项
 
-## 作为客户端（加入聊天室）
+生成后可在 `res/<api_port>/config.json` 中修改配置。常用配置项：
 
-### 首次连接
+| 配置项 | 说明 | 默认值 |
+|--------|------|--------|
+| `server_name` | 服务器名称 | TouchFish |
+| `captcha` | 注册是否需要验证码 | false |
+| `email_activate` | 注册是否需要邮箱验证 | ""（空为不启用） |
+| `file_last_time` | 文件保留时间（小时） | 72 |
+| `max_file_size` | 单文件最大大小（字节，-1 不限制） | -1 |
+| `user_storage_quota` | 用户存储配额（字节，-1 不限制） | -1 |
+| `max_message_length` | 单条消息最大长度 | 10000 |
 
-1. 运行 TouchFish 程序
-2. 按下 \<Enter\> 键开始配置
-3. 选择启动方式为 Client
-4. 输入服务器提供的 IP 地址
-5. 输入服务器提供的端口号
-6. 设置您的个人昵称
+::: tip 完整配置参考
+所有配置项的详细说明（频率限制、邮箱验证等）请参阅 [开服指导](/guide/server-setup)。
+:::
 
-### 后续连接
+## 启动服务端
 
-运行程序后，根据提示按下 \<Ctrl + C\> (Windows/Linux) 或 \<Ctrl + D\> (macOS)
+```bash
+# 使用配置 1 启动（API 端口 8080，TCP 端口 8081）
+python main.py --start-api --use-config 1
 
-程序将自动使用上次的配置连接服务器
+# 开启调试模式
+python main.py --start-api --use-config 1 --debug
+```
 
-## 系统要求
+启动后：
+- REST API 监听 `http://0.0.0.0:<api_port>`
+- WebSocket 监听 `ws://0.0.0.0:<tcp_port>`
 
-### Windows
+注意：建议使用其他方式启动 API 服务。
 
-Windows 10 或更新版本：支持
+## 连接客户端
 
-Windows 8.1 及更早版本：可能需要安装额外的 DLL 文件
+使用 [TouchFish Client](https://github.com/ILoveScratch2/TouchFish-Client)（基于 Flutter 的跨平台客户端）连接到服务端：
 
-权限要求：如果提示文件写入失败，请以管理员身份重新运行
+1. 打开 TouchFish Client
+2. 输入服务端的 IP 地址和 API 端口
+3. 注册新账号或登录已有账号
 
-### macOS
+客户端首次连接时会自动下载服务端 RSA 公钥，后续所有通信均为加密传输。
 
-支持版本：macOS 10.8 Mountain Lion 及以上
+## 多实例部署
 
-需要启用"任何来源"应用运行权限：
-
-打开"系统设置"
-
-进入"安全性与隐私"
-
-在"安全性"选项卡中
-
-在"允许以下来源的应用程序"部分选择"任何来源"
-
-### Linux
-
-无特殊限制
-
-服务端部署建议使用源代码版本而非编译后的二进制文件
+一份代码可以同时运行多个独立的服务端实例（不同端口、独立数据库、独立配置）。只需为每个实例创建配置后分别启动即可。

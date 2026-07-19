@@ -13,24 +13,26 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: '主页', link: '/' },
-      { text: '下载', link: '/guide/download' }
+      { text: '指南', link: '/guide/' }
     ],
 
     sidebar: [
       {
-        text: '教程',
+        text: '指南',
         items: [
-          { text: 'TouchFish', link: '/guide/' },
-          { text: 'TouchFish V5', link: '/guide/v5' },
-          { text: '快速开始', link: '/guide/start'},
-          { text: '下载', link: '/guide/download' }
+          { text: '关于 TouchFish V5', link: '/guide/' },
+          { text: '快速开始', link: '/guide/start' },
+          { text: '开服指导', link: '/guide/server-setup' },
+          { text: '服务器维护', link: '/guide/maintenance' },
+          { text: '服务器架构', link: '/guide/architecture' },
+          { text: '开发计划', link: '/guide/v5' },
         ]
       },
       {
         text: '文档站',
         items: [
           { text: '文档站点', link: '/doc-site/' },
-          { text: '文档 Markdown 语法', link: '/doc-site/markdown-usage' },
+          { text: 'Markdown 语法', link: '/doc-site/markdown-usage' },
         ]
       },
     ],
