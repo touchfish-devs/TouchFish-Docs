@@ -42,13 +42,15 @@ V5 采用全新 **RSA + AES 混合加密**：
 
 ---
 
-API 实现细节详见 [TouchFish-V5/docs/](https://github.com/2044-space-elevator/)。
+API 实现细节详见 [TouchFishServer/docs/api/](https://github.com/2044-space-elevator/TouchFishServer/tree/main/docs/api)。
 
 ---
 
 ## 数据库设计
 
-采用 **SQLite + WAL 模式**，每个服务实例拥有独立的数据库文件集：
+默认采用 **SQLite + WAL 模式**，每个服务实例拥有独立的数据库文件集；也可通过高级配置切换到 **MySQL / PostgreSQL**（实验性支持，不推荐）。
+
+实验性的 MYSQL / PGSQL 在此不做说明。
 
 | 数据库文件 | 表 | 用途 |
 |-----------|-----|------|
@@ -58,6 +60,7 @@ API 实现细节详见 [TouchFish-V5/docs/](https://github.com/2044-space-elevat
 | `messages.db` | `messages` | 私聊消息、群聊消息 |
 | `file.db` | `file`, `user_file` | 文件元数据、用户-文件关联 |
 | `notification.db` | `U<uid>` (动态表) | 每个用户的通知事件 |
+| `sticker.db` | 表情包/表情 | 用户创建的表情包与表情资源 |
 
 
 
