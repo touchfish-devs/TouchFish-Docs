@@ -12,6 +12,9 @@ title: TouchFish V5，全平台，开箱即用，快速部署，混合加密。�
 
 [TouchFish Official Web（国内部分地区可能会墙，体验不是很好，暂时没有浏览器通知，谨慎使用，仍然强烈推荐下载客户端）。](http://tf.ilovescratch.us.ci/)
 
+[TouchFish UI Remake 2（微软风格 UI，目前还在施工，具体发布时间关注 TouchFish 官网服务器以获得最新讯息）。](https://github.com/touchfish-devs/TouchFish-UI-Remake-2/releases/)
+
+
 > 叠甲，本软件只用于娱乐与学术交流目的。并不是鼓励大家不听正课，比如老师讲陈年水题时可以交流其它学术内容。请各位合理使用。
 
 > 同时，建立内网社区后，请规范使用。如发布不良内容遭制裁，TouchFish Dev 团队概不负责。
