@@ -8,14 +8,11 @@ title: 关于 TouchFish V5
 
 ### 诞生背景
 
-
-```
-在学校机房等断网环境下，传统的 QQ、微信等聊天工具无法使用。TouchFish 应运而生，它只需要局域网就能工作，也可在公网使用。
-```
+> 在学校机房等断网环境下，传统的 QQ、微信等聊天工具无法使用。TouchFish 应运而生，它只需要局域网就能工作，也可在公网使用。
 
 TouchFish 最初诞生于学校机房的断网环境 —— 当 QQ、微信等需要公网的聊天工具无法使用时，TouchFish 只需要局域网就能让同学们畅快聊天。
 
-V5 延续了这一初衷，但不再局限于局域网。全新的客户端-服务端分离架构让你可以在任何地方部署自己的聊天服务器，无论是在机房内网、云服务器~~，还是家里云~~！
+V5 延续了这一初衷，但不再局限于局域网。全新的客户端-服务端分离架构让你可以在任何地方部署自己的聊天服务器，无论是在机房内网、云服务器，~~还是家里云！~~
 
 ### 设计理念（V5）
 
@@ -38,14 +35,20 @@ TouchFish V5 是彻底的重写，而不是简单的升级。V5 的架构、协�
 V5 目前仍在积极开发中。查看 [开发计划](/guide/v5) 了解最新进度。
 :::
 
-主仓库：[GitHub 2044-space-elevator/TouchFish](https://github.com/2044-space-elevator/TouchFish)
-
+主仓库：[GitHub 2044-space-elevator/TouchFishServer](https://github.com/2044-space-elevator/TouchFishServer)  
+客户端仓库：[Github ILoveScratch2/TouchFish-Client](https://github.com/ilovescratch2/TouchFish-Client)
 
 ---
 
-## 推荐（Legacy）
+## 推荐
 
-### Cloud Studio Chat
+### TouchFish UI Remake 2（by pztsdy）
+
+TouchFish v5 的另一个 客户端发行版（目前仍在施工），为桌面平台提供专门优化的用户界面和交互体验，使用早期 Fluent 设计和 Modern UI 的混合美观设计，支持 Windows、macOS、Linux，提供高级的 TouchFish 聊天体验。
+
+仓库：[Github touchfish-devs/TouchFish-UI-Remake-2](https://github.com/touchfish-devs/TouchFish-UI-Remake-2)
+
+### Cloud Studio Chat（Legacy）
 
 感谢 **@pztsdy** 对 TouchFish 生态的贡献！他还开发了另一款优秀的局域网聊天工具：
 

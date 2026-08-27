@@ -28,8 +28,8 @@ title: TouchFish V5，全平台，开箱即用，快速部署，混合加密。�
 
 > 同时，建立内网社区后，请规范使用。如发布不良内容遭制裁，TouchFish Dev 团队概不负责。
 
-> 为了说明方便，下称客户端为 tfc（即 TouchFish Client），服务端为 tfs（即 TouchFish Server）。
-> 目前 tfc 移动端，通知还没有完全上线，会出现若干小问题，因此建议是将 tfc 一直留在后台，绝大多数情况下，这是可以收到通知的。
+> 为了说明方便，下称客户端为 tfc（即 TouchFish Client），服务端为 tfs（即 TouchFish Server）。  
+> 目前 tfc 移动端通知还没有完全上线，会出现若干小问题，因此建议是将 tfc 一直留在后台，绝大多数情况下，这是可以收到通知的。
  
 **如果您觉得 TouchFish 好用，请点个 star。如果您在使用 TouchFish 的时候遇到 bug，请在本文章下提出，最好是去 Github 上提 Issue，以方便流程化处理。如果您想给 TouchFish 添砖加瓦，请提交 PR，感谢您的支持！**
 
@@ -175,3 +175,19 @@ tfc 基于 Flutter 构建，开箱即可获得完整社交体验！
 ## 配置一个专业的 TFS 服务器
 
 完整配置项说明（`config.json`、端口规划、频率限制、运行时修改）请参阅 [开服指导](/guide/server-setup)。日常运维与备份、密钥管理请参阅 [服务器维护](/guide/maintenance)。
+
+## 致谢
+
+感谢 [@YWD2023](https://www.luogu.com.cn/user/1047144) 在项目 owner 备战中考期间操刀开发，完成大部分代码，基本上相当于写完了。祝他今年拿到 S1=！~~（实际上 80% 的代码都是他写的，10w 行代码没他根本写不下来）~~。
+
+感谢 [@035966\_L3](https://www.luogu.com.cn/user/365654)，完整设计 TFV4 协议并自己完成了 TFV4 的开发，这是 TouchFish 作为纯粹的机房聊天室达到的巅峰，我们不少曾在这上面制定开发方案等。今年他拿到国银，祝他未来的大学学业顺利！
+
+感谢 [@Sunchongyue](https://www.luogu.com.cn/user/1559719)，刚开始我们是没有服务器的，这位大佬给我们提供了大约 3 个月的服务器，~~是我的金主爸爸~~。他去打 pho 了，祝他顺利！
+
+感谢 [@piaoztsdy](https://www.luogu.com.cn/user/1252756) 开发了 tfv3 的文件传输等功能，开发了发行版 UI Remake 和 [UI Remake 2](https://github.com/touchfish-devs/TouchFish-UI-Remake-2/)。
+
+感谢 [@Miya0823](https://www.luogu.com.cn/user/1366636)，重构了屎山一样的 TF 最初代代码，并且从最开始跟随 TF 的成长。
+
+感谢 [@ayf2192538031](https://www.luogu.com.cn/user/1033674)，貌似退役了联系不上他，但是他重构了 TF 代码，分出 TouchFish Plus 发行版，感谢他的贡献！
+
+感谢所有参与 TouchFish 项目，所有曾在 TouchFish 做出贡献，所有曾给开发者们提供鼓励，所有帮助我们宣传的人！TouchFish 会记住你们。

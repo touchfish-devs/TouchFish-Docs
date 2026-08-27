@@ -42,7 +42,7 @@ V5 采用全新 **RSA + AES 混合加密**：
 
 ---
 
-API 实现细节详见 [TouchFishServer/docs/api/](https://github.com/2044-space-elevator/TouchFishServer/tree/main/docs/api)。
+API 实现细节详见文档 [TouchFishServer/docs/api/](https://github.com/2044-space-elevator/TouchFishServer/tree/main/docs/api)。
 
 ---
 
@@ -80,7 +80,7 @@ API 实现细节详见 [TouchFishServer/docs/api/](https://github.com/2044-space
 
 ## 多实例架构
 
-一份代码支持同时运行多个独立的服务端实例：
+一份代码支持同时运行多个独立的服务端实例，例如：
 
 ```json
 {
