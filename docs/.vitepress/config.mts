@@ -21,6 +21,7 @@ export default defineConfig({
         text: '指南',
         items: [
           { text: '关于 TouchFish V5', link: '/guide/' },
+          { text: 'TouchFish V5 快速开始', link: '/guide/quick-start' },
           { text: '快速开始', link: '/guide/start' },
           { text: '开服指导', link: '/guide/server-setup' },
           { text: '服务器维护', link: '/guide/maintenance' },
