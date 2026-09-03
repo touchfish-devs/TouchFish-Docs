@@ -180,6 +180,21 @@ MySQL / PostgreSQL 后端目前为**实验性支持**，不保证稳定性，可
 - WebSocket 消息频率由服务端内置限流，暂时不在此配置
 :::
 
+### 认证（JWT）
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `legacy_auth_enabled` | bool | `true` | 是否接受旧版 `uid + password` 认证（开启时旧客户端可继续使用，其响应会附带弃用提示 note） |
+| `jwt_expires_seconds` | int | `604800` | JWT 有效期（秒），默认 7 天 |
+| `jwt_max_per_user` | int | `5` | 单用户可同时持有的 token 数量，超限 BOOM；`0` 表示不限制 |
+
+::: tip JWT 说明
+- 客户端登录时请求体携带 `"jwt": true`，服务器返回 `{"token", "expires_in", "expires_at"}`。
+- 后续请求在加密请求体中以 `token` 字段代替 `uid` + `password`。
+- 用户修改密码、被封禁或删除时，其已签发的全部 JWT 立即失效。
+- JWT 签名密钥自动生成于 `res/<port>/secret/jwt_secret`；替换该文件并重启服务器可使全部 token 失效。
+:::
+
 ### 完整配置示例
 
 ```json
@@ -217,6 +232,9 @@ MySQL / PostgreSQL 后端目前为**实验性支持**，不保证稳定性，可
     "daily_sticker_pack_creation_limit": -1,
     "max_sticker_size": 1048576,
     "allowed_file_extensions": ["jpg", "jpeg", "png", "gif", "webp", "pdf", "zip", "txt", "md"],
+    "legacy_auth_enabled": true,
+    "jwt_expires_seconds": 604800,
+    "jwt_max_per_user": 5,
     "rate_limits": {
         "default":           {"requests": 60,  "range": 60},
         "/auth/register":    {"requests": 3,   "range": 300},
