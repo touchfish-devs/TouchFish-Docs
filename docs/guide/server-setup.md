@@ -13,7 +13,7 @@ TouchFish V5 每个服务实例需要**两个端口**：
 | 端口 | 协议 | 用途 |
 |------|------|------|
 | API 端口 | HTTP | Flask REST API，处理所有业务请求 |
-| TCP 端口 | WebSocket | 实时通信（消息、通知、状态推送） |
+| TCP 端口 | WebSocket | 实时通信（消息、通知、通话信令、状态推送） |
 
 两个端口不能重复，必须可访问。
 
@@ -47,7 +47,11 @@ python main.py --create-new-config
 
 ## config.json 完整参考
 
-配置文件位于 `res/<api_port>/config.json`。以下默认值为**新建服务器时生成的值**，部分字段支持传入 `-1` 表示不限制。
+配置文件位于 `res/<api_port>/config.json`。
+
+创建实例时只写入**最小配置**（服务器名、端口、验证码、邮件、文件保留时间、群组限制、限流、`max_file_size`、`user_storage_quota`），其余字段按需在高级配置或运行时补写。下表中的默认值为**服务端读取配置时使用的回退值**，因此字段缺失与显式填入默认值的行为一致。
+
+类型标注中的 `int（-1 = 不限制）` 表示该字段支持 `-1`。
 
 ### 基础配置
 
@@ -79,31 +83,63 @@ python main.py --create-new-config
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `file_last_time` | int | `72` | 文件保留时间（小时）。无引用的文件超时后自动清理 |
-| `max_file_size` | int | `73400320` | 单文件最大上传大小（字节，约 70MB），`-1` 表示不限制 |
-| `max_avatar_size` | int | 同 `max_file_size` | 头像文件最大大小（字节），`-1` 表示不限制 |
-| `user_storage_quota` | int | `73400320` | 每用户存储配额（字节，约 70MB），`-1` 表示不限制 |
-| `max_user_storage_quota` | int | `73400320` | 单用户存储配额的**硬性上限**（字节），即使 `user_storage_quota` 更高也不得超过，`-1` 表示不限制 |
-| `max_sticker_storage_quota` | int | `31457280` | 瞬时表情包（Sticker）总存储配额（字节，约 30MB），`-1` 表示不限制 |
+| `max_file_size` | int（`-1`） | `-1` | 单文件最大上传大小（字节），`-1` 表示不限制 |
+| `max_avatar_size` | int（`-1`） | 同 `max_file_size` | 头像文件最大大小（字节） |
+| `user_storage_quota` | int（`-1`） | `-1` | 每用户存储配额（字节） |
+| `max_user_storage_quota` | int（`-1`） | `73400320` | 单用户存储配额的**硬性上限**（字节，约 70MB），即使 `user_storage_quota` 更高也不得超过 |
+| `max_sticker_storage_quota` | int（`-1`） | `31457280` | 瞬时表情包（Sticker）总存储配额（字节，约 30MB） |
 | `allowed_file_extensions` | array \| null | `null` | 允许上传的文件扩展名白名单，如 `["jpg","png","pdf"]`；`null` 不限制 |
 | `storage_backend` | string | `"local"` | 文件存储后端：`local`（本地磁盘）或 `oss2`（阿里云 OSS） |
+| `file_download_mode` | string | `"redirect"` | OSS2 模式下的下载方式：`redirect`（307 预签名直链）或 `proxy`（服务端中转）。本地存储下无效果 |
 | `oss2_authid` | string | 无 | OSS2 AccessKey ID |
 | `oss2_authkey` | string | 无 | OSS2 AccessKey Secret |
 | `oss2_endpoint` | string | 无 | OSS2 Endpoint，如 `oss-cn-hangzhou.aliyuncs.com` |
 | `oss2_bucket` | string | 无 | OSS2 Bucket 名称 |
 
 ::: tip 存储配额说明
+- 创建实例时 `max_file_size` 与 `user_storage_quota` 被写为 `73400320`（约 70MB），这是新建服务器的**保守默认值**而非代码回退值；字段缺失或手动删除时服务端按 `-1`（不限制）处理，可在运行时调整
 - `user_storage_quota` 与 `max_user_storage_quota` 检查的是该用户所有**活跃引用**的文件总大小
 - 文件上传采用 SHA-256 去重：相同文件只存一份，多次引用共享物理存储
 - 当文件的引用计数归零且超过 `file_last_time` 小时未被重新引用后，自动清理
 - 使用 OSS2 时，文件存储于云端，本地不再保留文件实体；请为 OSS 配置生命周期规则以清理过期文件
 :::
 
+### 实时通话（RTC）
+
+TFS 现在支持了实时通话！~~（虽然 AI 含量为 inf）~~
+
+TFS 不提供 TURN 服务，只负责把管理员配置的 ICE 服务器下发给客户端（`GET /info` 的 `ice_servers`）。
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `rtc.turn_enabled` | bool | `false` | 是否下发自定义 ICE 服务器列表 |
+| `rtc.ice_servers` | array | `[]` | ICE 服务器条目，格式为 `{"urls": [...], "username": ..., "credential": ...}` |
+
+::: tip 配置示例
+```json
+{
+    "rtc": {
+        "turn_enabled": true,
+        "ice_servers": [
+            {"urls": ["stun:stun.epygi.com", "stun:stun.fitauto.ru"]},
+            {
+                "urls": ["turn:turn.example.com:3478"],
+                "username": "touchfish",
+                "credential": "replace-with-a-strong-password"
+            }
+        ]
+    }
+}
+```
+`turn_enabled` 为 `false` 或缺失时只返回内置 STUN 列表。TURN 服务的部署与验证详见服务端仓库的 `docs/rtc_turn_setup.md`。
+:::
+
 ### 群组限制
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `groups_limit` | int | `30` | 单个用户最多创建的群组数，`-1` 不限制 |
-| `single_group_max_people` | int | `200` | 单个群组最大人数，`-1` 不限制 |
+| `groups_limit` | int（`-1`） | `30` | 单个用户最多创建的群组数 |
+| `single_group_max_people` | int（`-1`） | `200` | 单个群组最大人数 |
 | `default_join_targets` | array | `[]` | 新注册用户自动加入的目标，格式为 `["U<uid>", "G<gid>"]`（如 `["G1"]` 表示自动加入群组 1），目标必须真实存在 |
 | `min_group_name_length` | int | `1` | 群名最小长度 |
 | `max_group_name_length` | int | `50` | 群名最大长度 |
@@ -113,20 +149,36 @@ python main.py --create-new-config
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `max_message_length` | int | `10000` | 单条消息最大字符数 |
-| `max_sign_length` | int | `100` | 个性签名最大长度 |
-| `max_introduction_length` | int | `500` | 个人简介最大长度 |
-| `max_post_content_length` | int | `20000` | 论坛帖子正文最大长度 |
-| `min_username_length` | int | `4` | 用户名最小长度 |
+| `max_sign_length` | int（`-1`） | `100` | 个性签名最大长度 |
+| `max_introduction_length` | int（`-1`） | `500` | 个人简介最大长度 |
+| `max_post_content_length` | int（`-1`） | `20000` | 论坛帖子正文最大长度 |
+| `min_username_length` | int | `4` | 用户名最小长度（运行时最少 4） |
 | `min_password_length` | int | `1` | 密码最小长度 |
 
 ### 表情包（Sticker）限制
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `max_sticker_packs_per_user` | int | `24` | 单个用户最多可创建的表情包数量，`-1` 不限制 |
-| `max_stickers_per_pack` | int | `24` | 单个表情包内最多表情数量，`-1` 不限制 |
-| `daily_sticker_pack_creation_limit` | int | `-1` | 用户每日最多创建表情包数量，`-1` 不限制 |
-| `max_sticker_size` | int | `1048576` | 单个表情文件最大大小（字节，约 1MB），`-1` 不限制 |
+| `max_sticker_packs_per_user` | int（`-1`） | `24` | 单个用户最多可创建的表情包数量 |
+| `max_stickers_per_pack` | int（`-1`） | `24` | 单个表情包内最多表情数量 |
+| `daily_sticker_pack_creation_limit` | int（`-1`） | `-1` | 用户每日最多创建表情包数量 |
+| `max_sticker_size` | int（`-1`） | `1048576` | 单个表情文件最大大小（字节，约 1MB） |
+
+### 认证（JWT）
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `legacy_auth_enabled` | bool | `true` | 是否接受旧版 `uid + password` 认证（开启时旧客户端可继续使用，其响应会附带弃用提示 note） |
+| `jwt_expires_seconds` | int | `604800` | JWT 有效期（秒），默认 7 天（运行时最少 60） |
+| `jwt_max_per_user` | int（`0` = 不限制） | `5` | 单用户可同时持有的 token 数量，超限返回 `token_limit_reached` |
+
+::: tip JWT 说明
+- 客户端登录时请求体携带 `"jwt": true`，服务器返回 `{"token", "expires_in", "expires_at"}`。
+- 后续请求在加密请求体中以 `token` 字段代替 `uid` + `password`。
+- 用户修改密码、被封禁或删除时，其已签发的全部 JWT 立即失效。
+- JWT 签名密钥自动生成于 `res/<port>/secret/jwt_secret`；替换该文件并重启服务器可使全部 token 失效。
+- 单台设备可通过 `/auth/tokens/revoke` 主动踢出，详见 API 文档的 JWT 章节。
+:::
 
 ### 数据库
 
@@ -177,22 +229,7 @@ MySQL / PostgreSQL 后端目前为**实验性支持**，不保证稳定性，可
 ::: tip 限流建议
 - 注册端点 (`/auth/register`) 建议严格限制，防止批量注册
 - 文件上传 (`/file/upload_file`) 按服务器带宽适当限制
-- WebSocket 消息频率由服务端内置限流，暂时不在此配置
-:::
-
-### 认证（JWT）
-
-| 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `legacy_auth_enabled` | bool | `true` | 是否接受旧版 `uid + password` 认证（开启时旧客户端可继续使用，其响应会附带弃用提示 note） |
-| `jwt_expires_seconds` | int | `604800` | JWT 有效期（秒），默认 7 天 |
-| `jwt_max_per_user` | int | `5` | 单用户可同时持有的 token 数量，超限 BOOM；`0` 表示不限制 |
-
-::: tip JWT 说明
-- 客户端登录时请求体携带 `"jwt": true`，服务器返回 `{"token", "expires_in", "expires_at"}`。
-- 后续请求在加密请求体中以 `token` 字段代替 `uid` + `password`。
-- 用户修改密码、被封禁或删除时，其已签发的全部 JWT 立即失效。
-- JWT 签名密钥自动生成于 `res/<port>/secret/jwt_secret`；替换该文件并重启服务器可使全部 token 失效。
+- WebSocket 消息与通话信令频率由服务端内置限流，暂时不在此配置
 :::
 
 ### 完整配置示例
@@ -214,10 +251,10 @@ MySQL / PostgreSQL 后端目前为**实验性支持**，不保证稳定性，可
     "groups_limit": 20,
     "single_group_max_people": 100,
     "default_join_targets": ["G1"],
-    "max_file_size": 104857600,
-    "max_avatar_size": 5242880,
-    "user_storage_quota": 1073741824,
-    "max_user_storage_quota": 1073741824,
+    "max_file_size": -1,
+    "max_avatar_size": -1,
+    "user_storage_quota": -1,
+    "max_user_storage_quota": 73400320,
     "max_sticker_storage_quota": 31457280,
     "max_message_length": 5000,
     "min_group_name_length": 2,
@@ -235,6 +272,10 @@ MySQL / PostgreSQL 后端目前为**实验性支持**，不保证稳定性，可
     "legacy_auth_enabled": true,
     "jwt_expires_seconds": 604800,
     "jwt_max_per_user": 5,
+    "rtc": {
+        "turn_enabled": false,
+        "ice_servers": []
+    },
     "rate_limits": {
         "default":           {"requests": 60,  "range": 60},
         "/auth/register":    {"requests": 3,   "range": 300},
@@ -249,15 +290,24 @@ MySQL / PostgreSQL 后端目前为**实验性支持**，不保证稳定性，可
 root 用户可通过客户端（或 API）在运行时修改大部分配置项。主要入口：
 
 - `POST /auth/server_settings/query`：查询当前配置
-- `POST /auth/server_settings/update`：更新以下字段（仅更新显式传入的字段）
+- `POST /auth/server_settings/update`：更新以下字段（仅更新显式传入的字段，成功时返回更新后的完整配置）
 
-可更新字段：`server_name`、`captcha`、`file_last_time`、`groups_limit`、`single_group_max_people`、`default_join_targets`、`max_file_size`、`max_avatar_size`、`user_storage_quota`、`max_user_storage_quota`、`max_sticker_storage_quota`、`max_message_length`、`min_group_name_length`、`max_group_name_length`、`max_sign_length`、`max_introduction_length`、`max_post_content_length`、`min_username_length`、`min_password_length`、`max_sticker_packs_per_user`、`max_stickers_per_pack`、`daily_sticker_pack_creation_limit`、`max_sticker_size`、`smtp_host`、`smtp_port`、`smtp_use_ssl`、`reverse_proxy_enabled`、`proxy_count`
+可更新字段：`server_name`、`captcha`、`file_last_time`、`groups_limit`、`single_group_max_people`、`default_join_targets`、`max_file_size`、`max_avatar_size`、`user_storage_quota`、`max_user_storage_quota`、`max_sticker_storage_quota`、`max_message_length`、`min_group_name_length`、`max_group_name_length`、`max_sign_length`、`max_introduction_length`、`max_post_content_length`、`min_username_length`、`min_password_length`、`max_sticker_packs_per_user`、`max_stickers_per_pack`、`daily_sticker_pack_creation_limit`、`max_sticker_size`、`smtp_host`、`smtp_port`、`smtp_use_ssl`、`reverse_proxy_enabled`、`proxy_count`、`legacy_auth_enabled`、`jwt_expires_seconds`、`jwt_max_per_user`、`file_download_mode`
 
 ::: warning 独立接口
 - `rate_limits` 通过 `POST /auth/change_rate_limits` 修改，传入 `null` 可清空全部限流，修改后**立即生效**
 - 邮箱验证开关及 SMTP 凭据通过 `POST /auth/change_email_verify` 修改
 - 图片验证码开关可通过 `POST /auth/change_captcha` 修改
-- `max_message_length`、`reverse_proxy_enabled`、`proxy_count`、`rate_limits` 修改后立即生效，无需重启；其余字段需重启服务端后生效
+- `max_message_length` 修改后立即生效，无需重启
+- `reverse_proxy_enabled` 与 `proxy_count` 修改后立即重新包装请求中间件
+- `file_download_mode` 可随时切换，无需重启
+- 其余字段需重启服务端后生效
 :::
 
-
+::: tip 校验约束
+- `server_name` 必须是非空字符串
+- `file_last_time` ≥ `0`；`proxy_count` ≥ `0`；`smtp_port` ≥ `1`
+- `groups_limit`、`single_group_max_people`、`max_file_size`、`max_avatar_size`、`user_storage_quota`、`max_user_storage_quota`、`max_sticker_storage_quota`、`max_sign_length`、`max_introduction_length`、`max_post_content_length`、`max_sticker_packs_per_user`、`max_stickers_per_pack`、`daily_sticker_pack_creation_limit`、`max_sticker_size` 与 `jwt_max_per_user` 支持传入 `-1`（`jwt_max_per_user` 为 `0`）表示不限制
+- `min_username_length` 运行时不可低于 `4`
+- `default_join_targets` 中的目标必须真实存在（用户或群组）
+:::

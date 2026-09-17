@@ -15,8 +15,8 @@ title: 快速开始
 ### 1. 获取源码
 
 ```bash
-git clone https://github.com/2044-space-elevator/TouchFish.git
-cd TouchFish
+git clone https://github.com/2044-space-elevator/TouchFishServer
+cd TouchFishServer
 ```
 
 ### 2. 安装依赖
@@ -25,55 +25,60 @@ cd TouchFish
 pip install -r requirements.txt
 ```
 
-核心依赖包括 Flask、websockets、argon2-cffi、cryptography、Pillow、captcha。
+核心依赖包括 Flask、waitress、websockets、argon2-cffi、cryptography、PyJWT、Pillow、captcha。
 
 ## 配置服务端
 
 ### 创建新实例
 
 ```bash
-python main.py --create-new-config --use-config 1
+python main.py --create-new-config
 ```
 
-这会为配置 `1`（API 端口 8080、TCP 端口 8081）创建完整的运行目录，包括：
-- RSA 密钥对（`res/8080/secret/`）
+按向导输入 API 端口与 TCP 端口后，会创建完整的运行目录，包括：
+- RSA 密钥对与 JWT 签名密钥（`res/<api_port>/secret/`）
 - SQLite 数据库文件
 - 默认头像和资源文件
 - 服务器配置文件
 
+配置会追加到 `server_config.json`，其编号用于后续启动。
+
 ### 服务端配置项
 
-生成后可在 `res/<api_port>/config.json` 中修改配置。常用配置项：
+生成后可在 `res/<api_port>/config.json` 中修改配置。常用配置项及其默认值：
 
 | 配置项 | 说明 | 默认值 |
 |--------|------|--------|
-| `server_name` | 服务器名称 | TouchFish |
-| `captcha` | 注册是否需要验证码 | false |
-| `email_activate` | 注册是否需要邮箱验证 | ""（空为不启用） |
-| `file_last_time` | 文件保留时间（小时） | 72 |
-| `max_file_size` | 单文件最大大小（字节，-1 不限制） | -1 |
-| `user_storage_quota` | 用户存储配额（字节，-1 不限制） | -1 |
-| `max_message_length` | 单条消息最大长度 | 10000 |
+| `server_name` | 服务器名称 | `TouchFish` |
+| `captcha` | 注册是否需要验证码 | `false` |
+| `email_activate` | 发件邮箱，空为不启用邮箱验证 | `""` |
+| `file_last_time` | 文件保留时间（小时） | `72` |
+| `max_file_size` | 单文件最大大小（字节） | `-1`（不限制） |
+| `user_storage_quota` | 用户存储配额（字节） | `-1`（不限制） |
+| `max_message_length` | 单条消息最大长度 | `10000` |
+| `jwt_max_per_user` | 单用户可同时持有的 token 数 | `5` |
+| `legacy_auth_enabled` | 是否接受旧版 uid+password 认证 | `true` |
+| `storage_backend` | 文件存储后端（`local` / `oss2`） | `local` |
 
 ::: tip 完整配置参考
-所有配置项的详细说明（频率限制、邮箱验证等）请参阅 [开服指导](/guide/server-setup)。
+所有配置项的详细说明（反向代理、RTC/TURN、频率限制、对象存储等）请参阅 [开服指导](/guide/server-setup)。
 :::
 
 ## 启动服务端
 
 ```bash
-# 使用配置 1 启动（API 端口 8080，TCP 端口 8081）
-python main.py --start-api --use-config 1
+# 使用指定编号的配置启动（编号从 0 开始，见 server_config.json）
+python main.py --start-api --use-config <编号>
 
-# 开启调试模式
-python main.py --start-api --use-config 1 --debug
+# 仅调试时使用 Flask 开发服务器，并输出请求日志
+python main.py --start-api --use-config <编号> --dev-server --debug --log
 ```
+
+不带 `--start-api` 时只会启动 TCP（WebSocket）服务，REST API 需要单独暴露；`--start-api` 会在同一进程内启动内置 waitress 服务器，可通过 `--waitress-threads`（默认 16）与 `--waitress-connection-limit`（默认 1000）调整。
 
 启动后：
 - REST API 监听 `http://0.0.0.0:<api_port>`
 - WebSocket 监听 `ws://0.0.0.0:<tcp_port>`
-
-注意：建议使用其他方式启动 API 服务。
 
 ## 连接客户端
 
